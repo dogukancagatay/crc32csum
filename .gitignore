@@ -1,0 +1,7 @@
+*.o
+*.a
+*.so
+*.exe
+crc32csum
+crc32csum-test
+build
