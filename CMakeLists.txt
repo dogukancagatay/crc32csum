@@ -17,14 +17,14 @@ else ()
 endif()
 
 set(SOURCES src/crc32csum.h src/crc32csum.cpp)
-set(TEST_SOURCES src/crc32csum.h src/crc32csum-test.cpp)
+# set(TEST_SOURCES src/crc32csum.h src/crc32csum-test.cpp)
 
 add_executable(crc32csum ${SOURCES})
 # add_executable(crc32csum-test ${TEST_SOURCES})
 
 if (WIN32)
     target_link_libraries(crc32csum crc32c)
-    target_link_libraries(crc32csum-test crc32c)
+    # target_link_libraries(crc32csum-test crc32c)
 
     # Restore nuget packages https://docs.microsoft.com/en-us/nuget/consume-packages/package-restore#restore-using-msbuild
     # add_custom_command(TARGET crc32csum PRE_BUILD
@@ -37,7 +37,7 @@ if (WIN32)
     message(STATUS "Msbuild.exe location: ${CMAKE_MAKE_PROGRAM}")
 else()
     target_link_libraries(crc32csum ${PROJECT_LINK_LIBS})
-    target_link_libraries(crc32csum-test ${PROJECT_LINK_LIBS})
+    # target_link_libraries(crc32csum-test ${PROJECT_LINK_LIBS})
 
     add_custom_command(TARGET crc32csum PRE_BUILD
         COMMAND ${CMAKE_MAKE_PROGRAM} build WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/crc32c-hw)
