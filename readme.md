@@ -45,3 +45,12 @@ cd build
 cmake ../
 make
 ```
+
+#### Static executable (Only Linux)
+
+```
+mkdir build
+cd build
+cmake ../ -DBUILD_STATIC_EXECUTABLE=ON
+make
+```
