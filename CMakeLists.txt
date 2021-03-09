@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project (crc32csum)
+project (crc32csum VERSION "0.1.0")
 
 option(BUILD_STATIC_EXECUTABLE "Build static executable. Only valid on Linux" OFF)
 
