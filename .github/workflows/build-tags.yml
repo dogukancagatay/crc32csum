@@ -13,6 +13,7 @@ jobs:
           mkdir build
           cd build
           cmake ../
+          make
           cpack
       - name: Generate Changelog
         run: echo "# Good things have arrived" > ${{ github.workflow }}-CHANGELOG.txt
