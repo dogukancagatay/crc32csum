@@ -1,0 +1,39 @@
+name: Publish DEB Package
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: 
+          submodules: true
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+
+      - name: Replace version with tag
+        run: |
+          sed -E -i 's|VERSION "[0-9.]+"|VERSION "${{ steps.get_version.outputs.VERSION }}"|' CMakeLists.txt
+
+      - name: Build and Create DEB
+        run: |
+          mkdir build
+          cd build
+          cmake ../
+          cpack
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/crc32csum_${{ steps.get_version.outputs.VERSION }}_amd64.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

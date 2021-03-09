@@ -1,12 +1,14 @@
-cmake_minimum_required(VERSION 3.15)
-project (crc32csum)
+cmake_minimum_required(VERSION 3.13)
+project (crc32csum VERSION "0.0.1")
 
 option(BUILD_STATIC_EXECUTABLE "Build static executable. Only valid on Linux" OFF)
 
-include_directories(${PROJECT_SOURCE_DIR}/crc32c-hw)
-
-
 set(CMAKE_BUILD_TYPE Release)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Doğukan Çağatay") #required
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+
+include_directories(${PROJECT_SOURCE_DIR}/crc32c-hw)
 
 if (WIN32)
     add_library(crc32c SHARED IMPORTED GLOBAL)
@@ -24,18 +26,12 @@ else ()
 endif()
 
 set(SOURCES src/crc32csum.h src/crc32csum.cpp)
-# set(TEST_SOURCES src/crc32csum.h src/crc32csum-test.cpp)
 
 add_executable(crc32csum ${SOURCES})
-# add_executable(crc32csum-test ${TEST_SOURCES})
 
 if (WIN32)
     target_link_libraries(crc32csum crc32c)
-    # target_link_libraries(crc32csum-test crc32c)
 
-    # Restore nuget packages https://docs.microsoft.com/en-us/nuget/consume-packages/package-restore#restore-using-msbuild
-    # add_custom_command(TARGET crc32csum PRE_BUILD
-    #    COMMAND ${CMAKE_MAKE_PROGRAM} crc32c.sln -t:restore WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/crc32c-hw)
     add_custom_command(TARGET crc32csum PRE_BUILD
         COMMAND ${CMAKE_MAKE_PROGRAM} crc32c.sln /p:Configuration=Release /p:Platform=x64 /target:crc32c WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/crc32c-hw)
     add_custom_command(TARGET crc32csum POST_BUILD
@@ -44,7 +40,7 @@ if (WIN32)
     message(STATUS "Msbuild.exe location: ${CMAKE_MAKE_PROGRAM}")
 elseif(APPLE)
     target_link_libraries(crc32csum ${PROJECT_LINK_LIBS})
-    # target_link_libraries(crc32csum-test ${PROJECT_LINK_LIBS})
+
     if(BUILD_STATIC_EXECUTABLE)
         message(STATUS "Will build static executable")
     endif()
@@ -59,8 +55,15 @@ else()
         target_link_libraries(crc32csum ${PROJECT_LINK_LIBS})
     endif()
 
-    # target_link_libraries(crc32csum-test ${PROJECT_LINK_LIBS})
-
     add_custom_command(TARGET crc32csum PRE_BUILD
         COMMAND ${CMAKE_MAKE_PROGRAM} build WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/crc32c-hw)
 endif()
+
+include(GNUInstallDirs)
+
+install(TARGETS crc32csum
+    COMPONENT crc32csum
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+include(CPack)
