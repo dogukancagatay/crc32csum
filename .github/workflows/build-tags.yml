@@ -61,7 +61,7 @@ jobs:
 
       - name: Replace version with tag
         run: |
-          sed -E -i 's|VERSION "[0-9.]+"|VERSION "${{ steps.get_version.outputs.VERSION }}"|' CMakeLists.txt
+          sed -E -i '' -e 's|VERSION "[0-9.]+"|VERSION "${{ steps.get_version.outputs.VERSION }}"|' CMakeLists.txt
 
       - name: Build binary
         run: |
