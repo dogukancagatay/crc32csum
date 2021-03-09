@@ -33,7 +33,7 @@ jobs:
 
       - name: Replace binary version with tag
         run: |
-          mv crc32csum crc32csum-${{ steps.get_version.outputs.VERSION }}-linux-amd64
+          mv build/crc32csum build/crc32csum-${{ steps.get_version.outputs.VERSION }}-linux-amd64
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -71,7 +71,7 @@ jobs:
 
       - name: Replace binary version with tag
         run: |
-          mv crc32csum crc32csum-${{ steps.get_version.outputs.VERSION }}-darwin-amd64
+          mv build/crc32csum build/crc32csum-${{ steps.get_version.outputs.VERSION }}-darwin-amd64
 
       - name: Release
         uses: softprops/action-gh-release@v1
