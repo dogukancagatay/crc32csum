@@ -1,35 +1,46 @@
 cmake_minimum_required(VERSION 3.13)
-project (crc32csum VERSION "0.0.1")
 
-option(BUILD_STATIC_EXECUTABLE "Build static executable. Only valid on Linux" OFF)
+# This file needs to be included before calling `project`.
+include(cmake/UniversalAppleBuild.cmake)
+
+project (crc32csum
+    VERSION "2.0.0"
+    DESCRIPTION "Simple crc32c checksum utility"
+    HOMEPAGE_URL "https://github.com/dogukancagatay/crc32csum.git"
+    LANGUAGES CXX
+)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BUILD_TYPE Release)
 set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Doğukan Çağatay") #required
+set(CPACK_PACKAGE_CONTACT "dcagatay@gmail.com") #required
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simple crc32c checksum utility"
+    CACHE STRING "Checksum utility for computing crc32c checksums."
+)
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
-include_directories(${PROJECT_SOURCE_DIR}/crc32c-hw)
+# set(CRC32C_BUILD_TESTS 0)
+set(CRC32C_BUILD_BENCHMARKS 0)
+add_subdirectory(crc32c)
+include_directories(${CMAKE_SOURCE_DIR}/crc32c/include)
 
+set(SOURCES src/crc32csum.cpp src/crc32csum.h)
+add_executable(crc32csum ${SOURCES})
+
+set(TEST_SOURCES src/crc32csum-test.cpp src/crc32csum.h)
+add_executable(crc32csum-test ${TEST_SOURCES})
+
+# TODO: Fix Windows build
 if (WIN32)
     add_library(crc32c SHARED IMPORTED GLOBAL)
     set_target_properties(crc32c PROPERTIES
-        IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/crc32c-hw/x64/Release/crc32c64.dll"
-        IMPORTED_IMPLIB "${PROJECT_SOURCE_DIR}/crc32c-hw/x64/Release/crc32c64.lib"
+        IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/crc32c/x64/Release/crc32c64.dll"
+        IMPORTED_IMPLIB "${PROJECT_SOURCE_DIR}/crc32c/x64/Release/crc32c64.lib"
     )
-    target_include_directories(crc32c INTERFACE "${PROJECT_SOURCE_DIR}/crc32c-hw")
-else ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
-
-    set(PROJECT_LINK_LIBS libcrc32c.a)
-    link_directories(crc32c-hw)
-	#link_libraries("-static")
-endif()
-
-set(SOURCES src/crc32csum.h src/crc32csum.cpp)
-
-add_executable(crc32csum ${SOURCES})
-
-if (WIN32)
+    target_include_directories(crc32c INTERFACE "${PROJECT_SOURCE_DIR}/crc32c")
     target_link_libraries(crc32csum crc32c)
 
     add_custom_command(TARGET crc32csum PRE_BUILD
@@ -38,25 +49,17 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:crc32c> $<TARGET_FILE_DIR:crc32csum>/)
 
     message(STATUS "Msbuild.exe location: ${CMAKE_MAKE_PROGRAM}")
-elseif(APPLE)
-    target_link_libraries(crc32csum ${PROJECT_LINK_LIBS})
+# elseif(APPLE)
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+#     target_link_libraries(crc32csum crc32c)
+#     target_link_libraries(crc32csum-test crc32c)
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+    target_link_libraries(crc32csum crc32c)
+    target_link_libraries(crc32csum-test crc32c)
 
-    if(BUILD_STATIC_EXECUTABLE)
-        message(STATUS "Will build static executable")
-    endif()
-
-    add_custom_command(TARGET crc32csum PRE_BUILD
-        COMMAND ${CMAKE_MAKE_PROGRAM} build WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/crc32c-hw)
-else()
-    if(BUILD_STATIC_EXECUTABLE)
-        message(STATUS "Will build static executable")
-        target_link_libraries(crc32csum ${PROJECT_LINK_LIBS} -static)
-    else()
-        target_link_libraries(crc32csum ${PROJECT_LINK_LIBS})
-    endif()
-
-    add_custom_command(TARGET crc32csum PRE_BUILD
-        COMMAND ${CMAKE_MAKE_PROGRAM} build WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/crc32c-hw)
+    enable_testing()
+    add_test(NAME crc32csum-test COMMAND $<TARGET_FILE:crc32csum-test>)
 endif()
 
 include(GNUInstallDirs)

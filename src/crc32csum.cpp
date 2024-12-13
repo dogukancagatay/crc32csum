@@ -1,8 +1,8 @@
-#include "crc32csum.h"
-
-#include <iostream>
-#include <fstream>
 #include <cstring>
+#include <fstream>
+#include <iostream>
+
+#include "crc32csum.h"
 
 int main(int argc, char **argv) {
 
@@ -12,21 +12,12 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 1; i < argc; ++i) {
-
-        if (is_good(argv[i])) {
-
+        try {
             uint32_t crc = compute_crc32c_checksum(argv[i]);
-
-            if (crc != 0) {
-                std::cout << n2hexstr(crc) << "\t" << argv[i] << std::endl;
-            } else {
-                std::cerr << "Unexpected error reading file: " << argv[i] << std::endl;
-                return 1;
-            }
-
-        } else {
-            std::cerr << "Cannot open file: " << argv[i] << std::endl;
-            return 1;
+            std::cout << crc << "\t" << argv[i] << std::endl;
+        } catch (const std::invalid_argument &e) {
+            std::cerr << e.what() << std::endl;
+            continue;
         }
     }
 
