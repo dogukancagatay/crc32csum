@@ -1,0 +1,27 @@
+name: Pull request build
+
+on:
+  pull_request:
+    branches:
+     - master
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and run tests
+        run: |
+          mkdir build
+          cd build
+          cmake ../
+          make
+          ctest
